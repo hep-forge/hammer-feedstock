@@ -1,10 +1,11 @@
 {% set versions = {
-    "0.0.0": "REPLACE_WITH_SHA256"
+    "2.0.0": "0fab1c9c2f1f9cc0b20250dc53d97ee49e723c2e927e9c913ecc1418f1d73019"
 } %}
 
 {% set version = environ.get('COMMIT_VERSION', None) %}
 {% set version = version or versions.keys()|first %}
 {% set version = version|string %}
+{% set root_tag = (root or '')|replace('.', '') %}
 
 {% set name = environ.get('ANACONDA_PACKAGE', 'hammer')|string|lower %}
 
@@ -13,15 +14,31 @@ package:
   version: {{ environ.get('ANACONDA_VERSION', version)|replace("-", ".") }}
 
 source:
-  url: "https://gitlab.com/mpapucci/Hammer/archive/refs/tags/{{ version }}.tar.gz"   # TODO: confirm upstream's actual tag/tarball naming
+  url: "https://gitlab.com/mpapucci/Hammer/-/archive/v{{ version }}/Hammer-v{{ version }}.tar.gz"
   {% if versions.get(version, None) %}
   sha256: {{ versions.get(version) }}
   {% endif %}
+  # From conda-forge's hammer recipe: C++20 build, Python extension built
+  # without isolation, PIC on every architecture, RPATH of the shared
+  # libraries, and fixes in the ROOT demo and the I/O buffer.
+  patches:
+    - patches/cxx20_aggregate_init.patch
+    - patches/pyext_no_build_isolation.patch
+    - patches/pic_all_architectures.patch
+    - patches/rpath_for_shared_libs.patch
+    - patches/demo01root_python_literals.patch
+    - patches/demo01root_dangling_branch_addresses.patch
+    - patches/iobuffer_save_to_file_bytes.patch
 
 build:
   number: 0
+  string: "root{{ root_tag }}"
+  skip: true  # [not linux]
+  ignore_prefix_files:
+    - lib/*.pcm
+    - lib/Hammer/*.pcm
   run_exports:
-    - {{ pin_subpackage(name, max_pin="x.x.x") }}
+    - {{ pin_subpackage(name, max_pin="x.x") }}
 
 requirements:
   build:
@@ -30,19 +47,48 @@ requirements:
     - {{ stdlib('c') }}
     - cmake
     - make
+    - pkg-config
   host:
-    # TODO: library dependencies
+    - python
+    - root {{ root }}.*
+    - root-guard
+    - hepmc >=3 root{{ root_tag }}
+    - libboost-devel
+    - yaml-cpp
+    - numpy
+    - matplotlib-base
+    - cython
+    - cymove
+    - setuptools >=77.0.3
+    - python-build
+    - wheel
+    - pip
   run:
-    # TODO: runtime dependencies
+    - python
+    - matplotlib-base
+    - root {{ root }}.*
+    - root-guard
+    - hepmc >=3 root{{ root_tag }}
 
 test:
+  imports:
+    - hammer
   commands:
-    - echo "TODO: a real smoke test"
+    - test -f "${PREFIX}/include/Hammer/Hammer.hh"
+    - test -f "${PREFIX}/lib/cmake/Hammer/HammerConfig.cmake"
+    - cd "${PREFIX}/share/Hammer/examples" && ./demo01 && ./demo01root && ./demo02
+    - cd "${PREFIX}/share/Hammer/examples" && python demo01.py && python demo01root.py
 
 about:
-  home: "https://gitlab.com/mpapucci/Hammer"
-  license: "GPL-3.0-only"
-  summary: "Helicity Amplitude Module for Matrix Element Reweighting"
+  home: https://hammer.physics.lbl.gov/
+  dev_url: https://gitlab.com/mpapucci/Hammer
+  doc_url: https://hammer.physics.lbl.gov/HammerManual.pdf
+  license: GPL-3.0-only
+  license_file: COPYING
+  summary: Helicity Amplitude Module for Matrix Element Reweighting
+  description: |
+    HAMMER reweights Monte Carlo samples of semileptonic b-hadron decays
+    to any New Physics model or hadronic form factor description.
 
 extra:
   recipe-maintainers:
