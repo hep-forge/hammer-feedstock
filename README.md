@@ -5,7 +5,7 @@
 [![Anaconda Version](https://anaconda.org/hep-forge/hammer/badges/version.svg)](https://anaconda.org/hep-forge/hammer)
 [![Anaconda Platforms](https://anaconda.org/hep-forge/hammer/badges/platforms.svg)](https://anaconda.org/hep-forge/hammer)
 
-Feedstock for [hammer](https://gitlab.com/mpapucci/Hammer) — part of [hep-forge](https://anaconda.org/hep-forge).
+Feedstock for [hammer](https://hammer.physics.lbl.gov/) — part of [hep-forge](https://anaconda.org/hep-forge).
 Builds linux-amd64 + linux-arm64 in one matrix workflow and uploads to the
 [hep-forge](https://anaconda.org/hep-forge) Anaconda channel.
 
@@ -13,7 +13,12 @@ Helicity Amplitude Module for Matrix Element Reweighting
 
 ## Architectures
 
-State per architecture: see the platforms badge above or [anaconda.org/hep-forge/hammer](https://anaconda.org/hep-forge/hammer).
+| Architecture | Latest published |
+|--------------|------------------|
+| linux-amd64 (`linux-64`) | ✅ `2.0.0` |
+| linux-arm64 (`linux-aarch64`) | ✅ `2.0.0` |
+
+_As of the last feedstock render; the badges above are live._
 
 
 ## Install
