@@ -32,3 +32,9 @@ libstdcxx_version:          # [linux]
 # hep-forge ROOT is built for Python 3.12 only.
 python:
   - 3.12
+
+# Build against NumPy 2, like root. Unpinned, conda-build falls back to its
+# default 1.26, which exports numpy <2 and keeps hammer out of NumPy 2
+# environments.
+numpy:
+  - 2
